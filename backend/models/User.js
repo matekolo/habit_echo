@@ -19,6 +19,13 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        rewards: [
+            {
+                title: String,
+                description: String,
+                date: { type: Date, default: Date.now },
+            },
+        ],
     },
     { timestamps: true }
 );
