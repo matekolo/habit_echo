@@ -10,6 +10,7 @@ const reminderRoutes = require("./routes/reminderRoutes");
 require("./utils/cronJobs");
 const rewardRoutes = require("./routes/rewardRoutes");
 const statsRoutes = require("./routes/statsRoutes");
+const exportRoutes = require("./routes/exportRoutes");
 
 // Konfiguracja zmiennych œrodowiskowych
 dotenv.config();
@@ -26,6 +27,7 @@ app.use("/api/schedule", scheduleRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/rewards", rewardRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/export", exportRoutes);
 
 // Po³¹cz z baz¹ danych
 connectDB();
