@@ -45,15 +45,13 @@ const updateHabit = async (req, res) => {
             return res.status(401).json({ message: "Brak autoryzacji" });
         }
 
-        // Sprawdzenie, czy nawyk nie by³ wczeœniej wykonany
-        if (!habit.completed) {
-            // Dodanie punktów u¿ytkownikowi
+        if (!habit.completed && req.body.completed) {
             const user = await User.findById(req.user.id);
             user.points += habit.points;
+            user.completedHabits += 1;
             await user.save();
         }
 
-        // Aktualizacja nawyku (oznaczenie jako wykonany)
         habit.completed = req.body.completed;
         const updatedHabit = await habit.save();
 
