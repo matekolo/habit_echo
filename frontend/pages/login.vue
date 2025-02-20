@@ -1,31 +1,17 @@
 <script setup>
     import { ref } from "vue";
-    import { useRouter } from "vue-router";
-    import { useCookie } from "#app";
+    import { useAuth } from "~/composables/useAuth";
 
-    const router = useRouter();
+    const { login } = useAuth();
     const email = ref("");
     const password = ref("");
     const errorMessage = ref("");
 
     const handleLogin = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/users/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.value, password: password.value }),
-                credentials: "include",
-            });
-
-            if (!res.ok) {
-                throw new Error("Nieprawid³owe dane logowania");
-            }
-
-            const data = await res.json();
-            useCookie("token").value = data.token; // Zapisz token w ciasteczkach
-
-            router.push("/"); // Zamiast /dashboard przenosimy u¿ytkownika na stronê g³ówn¹
+            await login(email.value, password.value);
         } catch (error) {
+            console.error("B³¹d logowania:", error);
             errorMessage.value = "Nieprawid³owe dane logowania";
         }
     };
@@ -39,6 +25,7 @@
             <input v-model="password" type="password" placeholder="Has³o" class="w-full p-2 mb-4 rounded bg-gray-700 text-white" />
             <button @click="handleLogin" class="w-full bg-blue-500 text-white p-2 rounded">Zaloguj siê</button>
             <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+            <p class="text-white mt-2">Nie masz jeszcze konta? <NuxtLink to="/register" class="text-blue-400">Zarejestruj siê</NuxtLink></p>
         </div>
     </div>
 </template>
