@@ -14,16 +14,16 @@ const scheduleSchema = new mongoose.Schema(
         description: {
             type: String,
         },
+        dayOfWeek: {
+            type: String,
+            required: true,
+        },
         startTime: {
             type: String,
             required: true,
         },
         endTime: {
             type: String,
-            required: true,
-        },
-        days: {
-            type: [String], // np. ["Monday", "Wednesday", "Friday"]
             required: true,
         },
     },

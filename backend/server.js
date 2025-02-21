@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const connectDB = require("./config/db");
+const { protect } = require("./middleware/authMiddleware");
 const userRoutes = require("./routes/userRoutes");
 const habitRoutes = require("./routes/habitRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
@@ -36,7 +37,7 @@ app.use(cookieParser());
 // 🔹 API ROUTES
 app.use("/api/users", userRoutes);
 app.use("/api/habits", habitRoutes);
-app.use("/api/schedule", scheduleRoutes);
+app.use("/api/schedule", protect, scheduleRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/rewards", rewardRoutes);
 app.use("/api/stats", statsRoutes);

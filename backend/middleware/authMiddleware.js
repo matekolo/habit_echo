@@ -3,16 +3,8 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/User");
 
 const protect = asyncHandler(async (req, res, next) => {
-    let token;
+    let token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
 
-    // Pobieramy token z ciasteczka (lub z nagłówka, jeśli tak zdecydujesz)
-    if (req.cookies.token) {
-        token = req.cookies.token;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-        token = req.headers.authorization.split(" ")[1];
-    }
-
-    // Jeśli brak tokena → zwróć błąd 401
     if (!token) {
         res.status(401);
         throw new Error("Brak tokena, nieautoryzowany");
@@ -21,6 +13,12 @@ const protect = asyncHandler(async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = await User.findById(decoded.id).select("-password");
+
+        if (!req.user) {
+            res.status(401);
+            throw new Error("Nie znaleziono użytkownika");
+        }
+
         next();
     } catch (error) {
         res.status(401);

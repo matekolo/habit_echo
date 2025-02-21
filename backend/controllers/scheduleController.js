@@ -1,76 +1,53 @@
+﻿const asyncHandler = require("express-async-handler");
 const Schedule = require("../models/Schedule");
 
-// Pobranie harmonogramu u�ytkownika
-const getSchedule = async (req, res) => {
-    try {
-        const schedule = await Schedule.find({ user: req.user.id });
-        res.json(schedule);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+// 🔹 Pobieranie harmonogramu użytkownika
+const getSchedule = asyncHandler(async (req, res) => {
+    const schedule = await Schedule.find({ user: req.user.id });
 
-// Tworzenie nowego wpisu w harmonogramie
-const createSchedule = async (req, res) => {
-    const { title, description, startTime, endTime, days } = req.body;
 
-    if (!title || !startTime || !endTime || !days || days.length === 0) {
-        return res.status(400).json({ message: "Wszystkie pola s� wymagane" });
+    if (!schedule) {
+        return res.status(404).json({ message: "Harmonogram nie znaleziony" });
     }
 
-    try {
-        const schedule = await Schedule.create({
-            user: req.user.id,
-            title,
-            description,
-            startTime,
-            endTime,
-            days,
-        });
+    // Konwersja wyników przed zwróceniem
+    const formattedSchedule = schedule.map(item => ({
+        _id: item._id,
+        title: item.title,
+        description: item.description || "Brak opisu",
+        dayOfWeek: item.dayOfWeek || "Nieznany dzień",
+        startTime: item.startTime,
+        endTime: item.endTime,
+    }));
 
-        res.status(201).json(schedule);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    res.json(formattedSchedule);
+});
+
+// 🔹 Dodawanie nowego wydarzenia do harmonogramu
+const addScheduleItem = asyncHandler(async (req, res) => {
+
+    const { title, description, dayOfWeek, startTime, endTime } = req.body;
+
+    if (!title || !dayOfWeek || !startTime || !endTime) {
+        res.status(400);
+        throw new Error("Wszystkie pola są wymagane");
     }
-};
 
-// Aktualizacja wpisu w harmonogramie
-const updateSchedule = async (req, res) => {
-    try {
-        const schedule = await Schedule.findById(req.params.id);
-        if (!schedule) {
-            return res.status(404).json({ message: "Harmonogram nie znaleziony" });
-        }
-
-        if (schedule.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: "Brak autoryzacji" });
-        }
-
-        const updatedSchedule = await Schedule.findByIdAndUpdate(req.params.id, req.body, { new: true });
-
-        res.json(updatedSchedule);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!req.user) {
+        res.status(401);
+        throw new Error("Nieautoryzowany - brak użytkownika");
     }
-};
 
-// Usuwanie wpisu w harmonogramie
-const deleteSchedule = async (req, res) => {
-    try {
-        const schedule = await Schedule.findById(req.params.id);
-        if (!schedule) {
-            return res.status(404).json({ message: "Harmonogram nie znaleziony" });
-        }
+    const scheduleItem = await Schedule.create({
+        user: req.user.id,
+        title,
+        description,
+        dayOfWeek,
+        startTime,
+        endTime,
+    });
 
-        if (schedule.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: "Brak autoryzacji" });
-        }
+    res.status(201).json(scheduleItem);
+});
 
-        await Schedule.findByIdAndDelete(req.params.id);
-        res.json({ message: "Harmonogram usuni�ty" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-module.exports = { getSchedule, createSchedule, updateSchedule, deleteSchedule };
+module.exports = { getSchedule, addScheduleItem };
