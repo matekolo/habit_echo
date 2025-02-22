@@ -1,83 +1,70 @@
-const Habit = require("../models/Habit");
-const User = require("../models/User");
+ï»¿const Habit = require("../models/Habit");
 
-// Pobranie wszystkich nawyków u¿ytkownika
+// ğŸ“Œ Pobranie listy nawykÃ³w uÅ¼ytkownika
 const getHabits = async (req, res) => {
-  try {
-    const habits = await Habit.find({ user: req.user.id });
-    res.json(habits);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Tworzenie nowego nawyku
-const createHabit = async (req, res) => {
-  const { title, description, frequency } = req.body;
-
-  if (!title || !frequency) {
-    return res.status(400).json({ message: "Tytu³ i czêstotliwoœæ s¹ wymagane" });
-  }
-
-  try {
-    const habit = await Habit.create({
-      user: req.user.id,
-      title,
-      description,
-      frequency,
-    });
-
-    res.status(201).json(habit);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Aktualizacja nawyku
-const updateHabit = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
-        if (!habit) {
-            return res.status(404).json({ message: "Nawyk nie znaleziony" });
-        }
-
-        if (habit.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: "Brak autoryzacji" });
-        }
-
-        if (!habit.completed && req.body.completed) {
-            const user = await User.findById(req.user.id);
-            user.points += habit.points;
-            user.completedHabits += 1;
-            await user.save();
-        }
-
-        habit.completed = req.body.completed;
-        const updatedHabit = await habit.save();
-
-        res.json(updatedHabit);
+        const habits = await Habit.find({ user: req.user.id });
+        res.json(habits);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// Usuwanie nawyku
-const deleteHabit = async (req, res) => {
-  try {
-    const habit = await Habit.findById(req.params.id);
-    if (!habit) {
-      return res.status(404).json({ message: "Nawyk nie znaleziony" });
+// ğŸ“Œ Dodanie nowego nawyku
+const addHabit = async (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ message: "Nazwa nawyku jest wymagana" });
     }
 
-    if (habit.user.toString() !== req.user.id) {
-      return res.status(401).json({ message: "Brak autoryzacji" });
-    }
+    try {
+        const newHabit = await Habit.create({
+            user: req.user.id,
+            name,
+        });
 
-    await Habit.findByIdAndDelete(req.params.id);
-    res.json({ message: "Nawyk usuniêty" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        res.status(201).json(newHabit);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
-module.exports = { getHabits, createHabit, updateHabit, deleteHabit };
+// ğŸ“Œ Resetowanie nawyku (ustawienie nowej daty startowej)
+const resetHabit = async (req, res) => {
+    try {
+        const habit = await Habit.findById(req.params.id);
+        if (!habit) {
+            return res.status(404).json({ message: "Nawyk nie znaleziony" });
+        }
+        if (habit.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: "Brak autoryzacji" });
+        }
+
+        habit.startDate = new Date();
+        await habit.save();
+
+        res.json(habit);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// ğŸ“Œ UsuniÄ™cie nawyku
+const deleteHabit = async (req, res) => {
+    try {
+        const habit = await Habit.findById(req.params.id);
+        if (!habit) {
+            return res.status(404).json({ message: "Nawyk nie znaleziony" });
+        }
+        if (habit.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: "Brak autoryzacji" });
+        }
+
+        await habit.deleteOne();
+        res.json({ message: "Nawyk usuniÄ™ty" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { getHabits, addHabit, resetHabit, deleteHabit };

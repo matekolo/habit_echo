@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const habitSchema = new mongoose.Schema(
     {
@@ -7,26 +7,14 @@ const habitSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
-        title: {
+        name: {
             type: String,
             required: true,
         },
-        description: {
-            type: String,
-        },
-        frequency: {
-            type: String,
-            enum: ["daily", "weekly", "monthly"],
-            required: true,
-        },
-        completed: {
-            type: Boolean,
-            default: false,
-        },
-        points: {
-            type: Number,
-            default: 10,
-        },
+        startDate: {
+            type: Date,
+            default: Date.now, // 📌 Moment rozpoczęcia liczenia
+        }
     },
     { timestamps: true }
 );

@@ -70,10 +70,10 @@
                 </div>
             </div>
 
-            <!-- 🔹 Sekcja Nawyki (Placeholder) -->
+            <!-- 🔹 Sekcja Nawyki -->
             <div v-if="activeTab === 'habits'" class="bg-gray-800 p-6 rounded shadow">
                 <h2 class="text-2xl font-semibold">📌 Nawyki</h2>
-                <p class="text-gray-400">Funkcja w budowie...</p>
+                <HabitTracker fullPanel />
             </div>
 
             <!-- 🔹 Sekcja Zadania (Placeholder) -->
@@ -92,11 +92,13 @@
 </template>
 
 <script>
-    import ScheduleComponent from "~/components/ScheduleComponent.vue"; // ✅ Wczytujemy komponent harmonogramu
+    import ScheduleComponent from "~/components/ScheduleComponent.vue";
+    import HabitTracker from "~/components/HabitTracker.vue"; // ✅ Wczytujemy komponent harmonogramu
 
     export default {
         components: {
             ScheduleComponent,
+            HabitTracker,
         },
     };
 </script>
