@@ -8,11 +8,7 @@ const { protect } = require("./middleware/authMiddleware");
 const userRoutes = require("./routes/userRoutes");
 const habitRoutes = require("./routes/habitRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
-const reminderRoutes = require("./routes/reminderRoutes");
-require("./utils/cronJobs");
-const rewardRoutes = require("./routes/rewardRoutes");
-const statsRoutes = require("./routes/statsRoutes");
-const exportRoutes = require("./routes/exportRoutes");
+
 
 dotenv.config();
 const app = express();
@@ -38,10 +34,7 @@ app.use(cookieParser());
 app.use("/api/users", userRoutes);
 app.use("/api/habits", habitRoutes);
 app.use("/api/schedule", protect, scheduleRoutes);
-app.use("/api/reminders", reminderRoutes);
-app.use("/api/rewards", rewardRoutes);
-app.use("/api/stats", statsRoutes);
-app.use("/api/export", exportRoutes);
+
 
 // Połącz z bazą danych
 connectDB();
