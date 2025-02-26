@@ -23,9 +23,9 @@ const addHabit = async (req, res) => {
             name,
         });
 
-        res.status(201).json(newHabit);
+        res.status(201).json({ message: "Dodano nowy nawyk!", habit: newHabit });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Błąd podczas dodawania nawyku!" });
     }
 };
 
@@ -43,9 +43,9 @@ const resetHabit = async (req, res) => {
         habit.startDate = new Date();
         await habit.save();
 
-        res.json(habit);
+        res.json({ message: "Nawyk zresetowany!", habit });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Błąd podczas resetowania nawyku!" });
     }
 };
 
@@ -61,10 +61,11 @@ const deleteHabit = async (req, res) => {
         }
 
         await habit.deleteOne();
-        res.json({ message: "Nawyk usunięty" });
+        res.json({ message: "Nawyk usunięty!" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Błąd podczas usuwania nawyku!" });
     }
 };
 
+// 📌 Eksportowanie funkcji
 module.exports = { getHabits, addHabit, resetHabit, deleteHabit };

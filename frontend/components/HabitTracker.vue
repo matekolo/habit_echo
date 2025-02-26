@@ -1,4 +1,5 @@
-﻿<script setup>
+﻿﻿
+<script setup>
     import { ref, onMounted, onUnmounted, defineProps } from "vue";
     import { useToast } from "~/composables/useToast";
 

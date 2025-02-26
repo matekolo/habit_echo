@@ -23,6 +23,21 @@ const getSchedule = asyncHandler(async (req, res) => {
     res.json(formattedSchedule);
 });
 
+const deleteScheduleItem = asyncHandler(async (req, res) => {
+    try {
+        const event = await Schedule.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Wydarzenie nie znalezione" });
+        }
+
+        await event.deleteOne();
+        res.json({ message: "Wydarzenie usunięte" });
+    } catch (error) {
+        res.status(500).json({ message: "Błąd serwera" });
+    }
+});
+
+
 // 🔹 Dodawanie nowego wydarzenia do harmonogramu
 const addScheduleItem = asyncHandler(async (req, res) => {
 
@@ -50,4 +65,5 @@ const addScheduleItem = asyncHandler(async (req, res) => {
     res.status(201).json(scheduleItem);
 });
 
-module.exports = { getSchedule, addScheduleItem };
+
+module.exports = { getSchedule, addScheduleItem, deleteScheduleItem };

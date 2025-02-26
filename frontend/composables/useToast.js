@@ -1,41 +1,25 @@
-import Toastify from "toastify-js";
-import "toastify-js/src/toastify.css";
+ï»¿import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
 
 export const useToast = () => {
-    const showToast = (message, type = "info", duration = 120000) => {
-        let bgColor;
+    return {
+        showToast: (message, type = 'success') => {
+            let backgroundColor = 'linear-gradient(to right, #00b09b, #96c93d)' // Zielony dla sukcesu
 
-        switch (type) {
-            case "success":
-                bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
-                break;
-            case "error":
-                bgColor = "linear-gradient(to right, #ff416c, #ff4b2b)";
-                break;
-            case "warning":
-                bgColor = "linear-gradient(to right, #ff9d2f, #ff6126)";
-                break;
-            default:
-                bgColor = "linear-gradient(to right, #232526, #414345)";
+            if (type === 'error') {
+                backgroundColor = 'linear-gradient(to right, #ff5f6d, #ffc371)' // Czerwony dla bÅ‚Ä™du
+            } else if (type === 'info') {
+                backgroundColor = 'linear-gradient(to right, #2193b0, #6dd5ed)' // Niebieski dla info
+            }
+
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: 'bottom', // â¬‡ï¸ Powiadomienia na dole
+                position: 'right', // â–¶ï¸ Po prawej
+                backgroundColor,
+            }).showToast()
         }
-
-        const toast = Toastify({
-            text: message,
-            duration: duration, // Domyœlnie 120 sekund
-            close: true,
-            gravity: "bottom", // Powiadomienie na dole ekranu
-            position: "right", // Prawa strona
-            backgroundColor: bgColor,
-            stopOnFocus: true,
-        });
-
-        toast.showToast();
-
-        // Opcjonalne: Automatyczne usuwanie powiadomienia po czasie
-        setTimeout(() => {
-            toast.hideToast(); // Niektóre wersje Toastify nie maj¹ tej metody, mo¿na j¹ zast¹piæ np. ukryciem CSS
-        }, duration);
-    };
-
-    return { showToast };
-};
+    }
+}

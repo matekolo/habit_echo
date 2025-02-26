@@ -1,7 +1,11 @@
-﻿<script setup>
+﻿﻿
+<script setup>
     import { ref, onMounted } from "vue";
     import { useAuth } from "~/composables/useAuth";
+    import { useToast } from "~/composables/useToast";
 
+    const { showToast } = useToast();
+    const notifiedEvents = new Set();
     const { user } = useAuth();
     const scheduleItems = ref([]);
     const newEventTitle = ref("");
@@ -38,6 +42,42 @@
         }
     };
 
+    const checkUpcomingEvents = () => {
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+
+        scheduleItems.value.forEach(event => {
+            const startTime = new Date(`${today}T${event.startTime}:00`);
+            const endTime = new Date(`${today}T${event.endTime}:00`);
+
+            const timeDiffStart = Math.floor((startTime - now) / 60000);
+            const timeDiffEnd = Math.floor((endTime - now) / 60000);
+
+            console.log(`[DEBUG] Sprawdzam wydarzenie: ${event.title}`);
+            console.log(`[DEBUG] Minuty do startu: ${timeDiffStart}, Minuty do końca: ${timeDiffEnd}`);
+
+            if (timeDiffStart === 30 && !notifiedEvents.has(`start-30-${event._id}`)) {
+                showToast(`Za 30 minut: ${event.title}`, "info");
+                notifiedEvents.add(`start-30-${event._id}`);
+            }
+
+            if (timeDiffStart === 0 && !notifiedEvents.has(`start-${event._id}`)) {
+                showToast(`Już czas na: ${event.title}`, "info");
+                notifiedEvents.add(`start-${event._id}`);
+            }
+
+            if (timeDiffEnd === 0 && !notifiedEvents.has(`end-${event._id}`)) {
+                showToast(`Pora zakończyć: ${event.title}`, "warning");
+                notifiedEvents.add(`end-${event._id}`);
+
+                // 🟢 Po zakończeniu wydarzenia automatycznie je usuwamy
+                deleteScheduleItem(event._id);
+            }
+        });
+    };
+
+
+
     const addScheduleItem = async () => {
         try {
             if (!newEventTitle.value || !newEventStartTime.value || !newEventEndTime.value) {
@@ -62,7 +102,7 @@
 
             if (!res.ok) throw new Error("Nie udało się dodać wydarzenia");
 
-            console.log("Wydarzenie dodane poprawnie!"); // 🔹 Debug
+            showToast("Dodano nowe wydarzenie!", "success");
 
             // Reset formularza
             newEventTitle.value = "";
@@ -73,11 +113,42 @@
 
             await fetchSchedule(); // 🔹 Odśwież harmonogram
         } catch (error) {
-            console.error(error);
+            showToast(error.message, "error");
         }
     };
 
-    onMounted(fetchSchedule);
+
+    const deleteScheduleItem = async (eventId) => {
+        console.log("[DEBUG] Automatyczne usuwanie wydarzenia:", eventId); // Sprawdzamy, czy ID jest poprawne
+
+        try {
+            const res = await fetch(`http://localhost:5000/api/schedule/${eventId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+
+            if (!res.ok) throw new Error("Nie udało się usunąć wydarzenia");
+
+            showToast("Wydarzenie usunięte!", "error");
+
+            // 🔄 Aktualizujemy listę wydarzeń w UI
+            await fetchSchedule();
+        } catch (error) {
+            showToast(error.message, "error");
+        }
+    };
+
+
+    setInterval(() => {
+        notifiedEvents.clear();
+    }, 60 * 60 * 1000);
+
+    onMounted(() => {
+        fetchSchedule();
+        setInterval(checkUpcomingEvents, 60000); // Sprawdzaj co minutę
+    });
+
 </script>
 
 <template>
@@ -112,8 +183,13 @@
         <!-- 🔹 Lista wydarzeń -->
         <h3 class="text-xl font-semibold mb-2">📋 Lista wydarzeń:</h3>
         <ul v-if="scheduleItems && scheduleItems.length > 0">
-            <li v-for="item in scheduleItems" :key="item._id" class="p-2 my-2 bg-gray-700 rounded">
-                <strong>{{ item.title }}</strong> - {{ item.dayOfWeek }} | {{ item.startTime }} - {{ item.endTime }}
+            <li v-for="item in scheduleItems" :key="item._id" class="p-2 my-2 bg-gray-700 rounded flex justify-between">
+                <div>
+                    <strong>{{ item.title }}</strong> - {{ item.dayOfWeek }} | {{ item.startTime }} - {{ item.endTime }}
+                </div>
+                <button @click="deleteScheduleItem(item._id)" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                    Usuń
+                </button>
             </li>
         </ul>
         <p v-else class="text-gray-400">Brak wydarzeń w harmonogramie</p>
